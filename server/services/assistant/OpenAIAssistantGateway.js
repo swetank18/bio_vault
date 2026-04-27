@@ -106,9 +106,15 @@ class OpenAIAssistantGateway {
         maxSockets: 50
       });
     }
-    this.client = apiKey || process.env.OPENAI_API_KEY
+    const resolvedApiKey = apiKey || process.env.OPENAI_API_KEY;
+    // OPENAI_BASE_URL lets the same gateway talk to any OpenAI-compatible
+    // endpoint (Groq, Together, OpenRouter, Azure OpenAI, etc.). When unset,
+    // the SDK defaults to https://api.openai.com/v1.
+    const baseURL = process.env.OPENAI_BASE_URL || process.env.OPENAI_API_BASE || undefined;
+    this.client = resolvedApiKey
       ? new OpenAI({
-          apiKey: apiKey || process.env.OPENAI_API_KEY,
+          apiKey: resolvedApiKey,
+          ...(baseURL ? { baseURL } : {}),
           httpAgent: OpenAIAssistantGateway._keepAliveAgent,
           timeout: 25000,
           maxRetries: 1
