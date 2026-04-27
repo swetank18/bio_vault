@@ -39,14 +39,7 @@ router.post('/signup', async (req, res) => {
       otpExpiry
     });
 
-    let otpResult;
-    try {
-      otpResult = await sendOTP(email, phone, otp, name);
-    } catch (sendErr) {
-      console.error('Signup OTP delivery failed:', sendErr.message);
-      await User.findByIdAndDelete(user._id).catch(() => {});
-      return res.status(502).json({ error: 'Could not send verification code. Please try again.' });
-    }
+    const otpResult = await sendOTP(email, phone, otp, name);
 
     const payload = {
       message: 'Account created. Verification code sent.',
@@ -55,12 +48,14 @@ router.post('/signup', async (req, res) => {
       requiresVerification: true
     };
 
-    // SMS provider (Fast2SMS) requires DLT/website verification. Until that's done,
-    // surface the OTP back to the client so the user can complete verification.
-    // Email delivery still happens normally.
-    if (!otpResult.sms) {
+    // If either delivery channel failed, surface the OTP on-screen so the
+    // user can still complete verification (demo / misconfigured SMTP).
+    if (!otpResult.email && !otpResult.sms) {
       payload.displayOtp = otp;
-      payload.displayOtpReason = 'SMS delivery is unavailable. Use the code below to verify.';
+      payload.displayOtpReason = 'Delivery channels are unavailable. Use the code below to verify.';
+    } else if (!otpResult.sms) {
+      payload.displayOtp = otp;
+      payload.displayOtpReason = 'SMS delivery is unavailable. Use the code below or check your email.';
     }
 
     res.status(201).json(payload);
@@ -98,22 +93,19 @@ router.post('/login', async (req, res) => {
       user.otp = otp;
       user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
       await user.save();
-      let otpResult;
-      try {
-        otpResult = await sendOTP(user.email, user.phone, otp, user.name);
-      } catch (e) {
-        console.error('Login OTP delivery failed:', e.message);
-        return res.status(502).json({ error: 'Could not send verification code. Please try again.' });
-      }
+      const otpResult = await sendOTP(user.email, user.phone, otp, user.name);
 
       const resp = {
         error: 'Account not verified',
         userId: user._id,
         requiresVerification: true
       };
-      if (!otpResult.sms) {
+      if (!otpResult.email && !otpResult.sms) {
         resp.displayOtp = otp;
-        resp.displayOtpReason = 'SMS delivery is unavailable. Use the code below to verify.';
+        resp.displayOtpReason = 'Delivery channels are unavailable. Use the code below to verify.';
+      } else if (!otpResult.sms) {
+        resp.displayOtp = otp;
+        resp.displayOtpReason = 'SMS delivery is unavailable. Use the code below or check your email.';
       }
       return res.status(403).json(resp);
     }
@@ -212,18 +204,16 @@ router.post('/resend-otp', async (req, res) => {
     user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
-    try {
-      const result = await sendOTP(user.email, user.phone, otp, user.name);
-      const payload = { message: 'Verification code resent', otpSent: result };
-      if (!result.sms) {
-        payload.displayOtp = otp;
-        payload.displayOtpReason = 'SMS delivery is unavailable. Use the code below to verify.';
-      }
-      return res.json(payload);
-    } catch (e) {
-      console.error('Resend OTP delivery failed:', e.message);
-      return res.status(502).json({ error: 'Could not send verification code. Please try again.' });
+    const result = await sendOTP(user.email, user.phone, otp, user.name);
+    const payload = { message: 'Verification code resent', otpSent: result };
+    if (!result.email && !result.sms) {
+      payload.displayOtp = otp;
+      payload.displayOtpReason = 'Delivery channels are unavailable. Use the code below to verify.';
+    } else if (!result.sms) {
+      payload.displayOtp = otp;
+      payload.displayOtpReason = 'SMS delivery is unavailable. Use the code below or check your email.';
     }
+    return res.json(payload);
   } catch (error) {
     console.error('Resend OTP error:', error);
     res.status(500).json({ error: 'Failed to resend OTP' });

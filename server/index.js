@@ -42,6 +42,7 @@ const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
   'https://localhost',
   'http://localhost',
   'https://srm-mediassist.vercel.app',
+  'https://bio-vault-three.vercel.app',
 ].forEach(o => {
   if (!allowedOrigins.includes(o)) allowedOrigins.push(o);
 });

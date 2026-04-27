@@ -140,28 +140,6 @@ export default function VerifyOTP() {
             </div>
           )}
 
-          {displayOtp && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-amber-50 border border-amber-300 text-amber-900 px-4 py-4 rounded-xl mb-6 text-left"
-            >
-              {displayReason && <p className="text-xs mb-2">{displayReason}</p>}
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[11px] uppercase tracking-wider font-semibold text-amber-700">Your verification code</p>
-                  <p className="font-mono text-2xl font-bold tracking-widest">{displayOtp}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setOtp(displayOtp.split(''))}
-                  className="px-3 py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600"
-                >
-                  Use code
-                </button>
-              </div>
-            </motion.div>
-          )}
 
           <form onSubmit={handleSubmit}>
             <div className="flex gap-3 justify-center mb-8" onPaste={handlePaste}>
