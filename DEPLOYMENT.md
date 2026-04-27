@@ -1,5 +1,11 @@
 # SRM BioVault — Deployment Guide
 
+## One-Click Backend Deploy
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/swetank18/bio_vault)
+
+Click the button → sign into Render → fill in the secret env vars (`MONGO_URI`, `OPENAI_API_KEY`, `EMAIL_USER`, `EMAIL_PASS`, `FAST2SMS_API_KEY`, `CLIENT_URL`) → click Apply. Render reads `render.yaml` and provisions everything else.
+
 ## Production Architecture
 
 ```
