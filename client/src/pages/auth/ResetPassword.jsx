@@ -7,9 +7,11 @@ import api from '../../lib/api';
 export default function ResetPassword() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { userId, identifier } = location.state || {};
+  const { userId, identifier, displayOtp: initialDisplayOtp, displayOtpReason: initialDisplayReason } = location.state || {};
 
-  const [form, setForm] = useState({ otp: '', newPassword: '', confirmPassword: '' });
+  const [form, setForm] = useState({ otp: initialDisplayOtp || '', newPassword: '', confirmPassword: '' });
+  const [displayOtp, setDisplayOtp] = useState(initialDisplayOtp || '');
+  const [displayReason, setDisplayReason] = useState(initialDisplayReason || '');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -104,6 +106,29 @@ export default function ResetPassword() {
                   className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 text-sm"
                 >
                   {error}
+                </motion.div>
+              )}
+
+              {displayOtp && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-amber-50 border border-amber-300 text-amber-900 px-4 py-4 rounded-xl mb-6 text-left"
+                >
+                  {displayReason && <p className="text-xs mb-2">{displayReason}</p>}
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wider font-semibold text-amber-700">Your OTP code</p>
+                      <p className="font-mono text-2xl font-bold tracking-widest">{displayOtp}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, otp: displayOtp }))}
+                      className="px-3 py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600"
+                    >
+                      Use code
+                    </button>
+                  </div>
                 </motion.div>
               )}
 

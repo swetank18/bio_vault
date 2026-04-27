@@ -24,7 +24,7 @@ export default function Login() {
     } catch (err) {
       const data = err.response?.data;
       if (data?.requiresVerification) {
-        navigate('/verify', { state: { userId: data.userId, displayOtp: data.displayOtp, displayOtpReason: data.displayOtpReason, displayOtp: data.displayOtp, displayOtpReason: data.displayOtpReason } });
+        navigate('/verify', { state: { userId: data.userId, displayOtp: data.displayOtp, displayOtpReason: data.displayOtpReason } });
       } else {
         setError(data?.error || err.message || 'Login failed');
       }

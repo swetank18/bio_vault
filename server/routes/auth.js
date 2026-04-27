@@ -246,12 +246,18 @@ router.post('/forgot-password', async (req, res) => {
     user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
-    await sendOTP(user.email, user.phone, otp, user.name);
+    const otpResult = await sendOTP(user.email, user.phone, otp, user.name);
 
-    res.json({
+    const payload = {
       message: 'If an account exists, an OTP has been sent.',
       userId: user._id
-    });
+    };
+    if (!otpResult.email && !otpResult.sms) {
+      payload.displayOtp = otp;
+      payload.displayOtpReason = 'Delivery channels are unavailable. Use the code below to reset your password.';
+    }
+
+    res.json(payload);
   } catch (error) {
     console.error('Forgot password error:', error);
     res.status(500).json({ error: 'Failed to process request' });

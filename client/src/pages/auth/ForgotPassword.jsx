@@ -19,7 +19,7 @@ export default function ForgotPassword() {
     try {
       const { data } = await api.post('/auth/forgot-password', { identifier });
       if (data.userId) {
-        navigate('/reset-password', { state: { userId: data.userId, identifier } });
+        navigate('/reset-password', { state: { userId: data.userId, identifier, displayOtp: data.displayOtp, displayOtpReason: data.displayOtpReason } });
       } else {
         navigate('/reset-password', { state: { identifier } });
       }

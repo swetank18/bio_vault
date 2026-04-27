@@ -18,7 +18,7 @@ export default function Signup() {
     setLoading(true);
     try {
       const result = await signup(form);
-      navigate('/verify', { state: { userId: result.userId, displayOtp: result.displayOtp, displayOtpReason: result.displayOtpReason, displayOtp: result.displayOtp, displayOtpReason: result.displayOtpReason } });
+      navigate('/verify', { state: { userId: result.userId, displayOtp: result.displayOtp, displayOtpReason: result.displayOtpReason } });
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Signup failed');
     } finally {
