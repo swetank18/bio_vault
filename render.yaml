@@ -16,7 +16,7 @@ services:
       - key: OPENAI_API_KEY
         sync: false
       - key: CLIENT_URL
-        value: https://srm-mediassist.vercel.app
+        sync: false
       - key: EMAIL_HOST
         value: smtp.gmail.com
       - key: EMAIL_PORT
@@ -31,8 +31,6 @@ services:
         value: gpt-5
       - key: OPENAI_MODEL_ASSISTANT
         value: gpt-5
-      - key: OPENAI_MODEL_NORMAL
-        value: gpt-5
       - key: OPENAI_MODEL_STT
         value: gpt-4o-transcribe
       - key: OPENAI_MODEL_TTS
@@ -41,5 +39,3 @@ services:
         value: alloy
       - key: DEMO_MODE
         value: "true"
-      - key: CLIENT_URL
-        sync: false

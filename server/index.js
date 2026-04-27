@@ -198,22 +198,7 @@ function listenOnPort(server, port) {
   });
 }
 
-async function startServer() {
-  let databaseError = null;
-
-  // DEMO_MODE only seeds data; assistant always runs in live/active mode
-
-  try {
-    await connectDB();
-    initSimulation(io);
-    if (process.env.DEMO_MODE === 'true') {
-      await seedDemoData();
-    }
-  } catch (error) {
-    databaseError = error;
-    console.error('⚠️  MongoDB unavailable — server will run in degraded mode:', error.message);
-  }
-
+async function runAssistantStartupChecks(databaseError) {
   assistantRuntimeStatus.beginStartupCheck({ live: true });
   try {
     const startupResult = await runStartupHealthVerification({ databaseError, live: true });
@@ -234,7 +219,13 @@ async function startServer() {
     });
     console.error('Assistant startup health verification crashed:', error.message);
   }
+}
 
+async function startServer() {
+  // Bind the HTTP port FIRST so the platform health check (Render, Docker, etc.)
+  // sees the service as live within the deploy window. DB + OpenAI verification
+  // run after listen and update assistantRuntimeStatus asynchronously; routes that
+  // depend on those services consult the runtime status and degrade gracefully.
   try {
     await listenOnPort(httpServer, PORT);
     console.log(`Server running on port ${PORT}`);
@@ -244,9 +235,23 @@ async function startServer() {
       console.error('Reuse the existing backend, stop the process using that port, or change PORT in server/.env before starting a new instance.');
       return;
     }
-
     console.error('Server failed to start:', error.message);
+    return;
   }
+
+  let databaseError = null;
+  try {
+    await connectDB();
+    initSimulation(io);
+    if (process.env.DEMO_MODE === 'true') {
+      await seedDemoData();
+    }
+  } catch (error) {
+    databaseError = error;
+    console.error('⚠️  MongoDB unavailable — server will run in degraded mode:', error.message);
+  }
+
+  await runAssistantStartupChecks(databaseError);
 }
 
 void startServer();
