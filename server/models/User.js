@@ -41,14 +41,9 @@ async function generateUniqueProfileId(Model) {
   throw new Error('No 4-digit profileId available');
 }
 
-userSchema.pre('validate', async function assignProfileId(next) {
-  try {
-    if (!this.profileId) {
-      this.profileId = await generateUniqueProfileId(this.constructor);
-    }
-    next();
-  } catch (err) {
-    next(err);
+userSchema.pre('validate', async function assignProfileId() {
+  if (!this.profileId) {
+    this.profileId = await generateUniqueProfileId(this.constructor);
   }
 });
 
